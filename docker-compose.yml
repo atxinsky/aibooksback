@@ -1,0 +1,34 @@
+services:
+  aibooksback:
+    build:
+      context: .
+      target: runtime
+    image: aibooksback:local
+    container_name: aibooksback
+    restart: unless-stopped
+    environment:
+      PORT: 3021
+      NODE_ENV: ${NODE_ENV:-production}
+      SESSION_COOKIE: ${SESSION_COOKIE:-liyan_session}
+      SESSION_DAYS: ${SESSION_DAYS:-7}
+      AI_BOOK_BACK_STORE_FILE: ${AI_BOOK_BACK_STORE_FILE:-/data/admin-store.json}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3021}
+    ports:
+      - "${HOST_PORT:-3021}:3021"
+    volumes:
+      - aibooksback-data:/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:' + (process.env.PORT || 3021) + '/health').then((r) => { if (!r.ok) process.exit(1); }).catch(() => process.exit(1));",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+volumes:
+  aibooksback-data:

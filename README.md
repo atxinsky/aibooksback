@@ -13,6 +13,37 @@ npm run dev
 
 默认端口：`3021`
 
+## Docker 运行
+
+本仓库已经支持后端容器化。容器内默认使用 `/data/admin-store.json` 持久化管理后台状态，数据通过 Docker volume 保存，不会随着容器重启丢失。
+
+```bash
+cp .env.docker.example .env.docker
+docker compose --env-file .env.docker up -d --build
+curl http://127.0.0.1:3021/health
+```
+
+常用命令：
+
+```bash
+docker compose logs -f aibooksback
+docker compose ps
+docker compose --env-file .env.docker down
+```
+
+生产部署时至少需要修改 `.env.docker` 里的 `PUBLIC_BASE_URL`，例如：
+
+```env
+PUBLIC_BASE_URL=https://api.example.com
+```
+
+如果服务器要把后端暴露到 `9666`，修改：
+
+```env
+HOST_PORT=9666
+PUBLIC_BASE_URL=http://111.229.104.43:9666
+```
+
 ## 测试
 
 ```bash
