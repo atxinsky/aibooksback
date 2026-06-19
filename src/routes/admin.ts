@@ -788,6 +788,48 @@ adminRoutes.patch("/feature-flags/:id", requirePermission("feature_flags.manage"
   return success(c, { featureFlag: next });
 });
 
+adminRoutes.get("/trial-accounts", requirePermission("system.view"), (c) => {
+  return success(c, {
+    warning: "仅用于本地试用与客户演示。正式部署必须替换为邀请制开户、强制改密和 2FA。",
+    accounts: [
+      { label: "平台管理员", email: "admin@liyan.local", role: "platform_admin", initialPassword: "LiyanAdmin2026!", entry: "/admin" },
+      { label: "平台运营", email: "ops@liyan.local", role: "platform_ops", initialPassword: "LiyanOps2026!", entry: "/admin" },
+      { label: "客户实施", email: "impl@liyan.local", role: "implementation_manager", initialPassword: "LiyanImpl2026!", entry: "/admin" },
+      { label: "研究院管理员", email: "orgadmin@liyan.local", role: "org_admin", initialPassword: "LiyanOrgAdmin2026!", entry: "/admin?scope=org:org_liyan_demo" },
+      { label: "项目经理", email: "pm@liyan.local", role: "project_manager", initialPassword: "LiyanPM2026!", entry: "/workspace/prj_pan_gaoling" },
+      { label: "责任编辑", email: "editor@liyan.local", role: "editor", initialPassword: "LiyanEditor2026!", entry: "/workspace/prj_pan_gaoling" },
+      { label: "专家审校", email: "expert@liyan.local", role: "expert", initialPassword: "LiyanExpert2026!", entry: "/workspace/prj_pan_gaoling" },
+      { label: "潘老师作者账号", email: "pan@liyan.local", role: "author", initialPassword: "LiyanAuthor2026!", entry: "/author-portal/auth_pan" },
+    ],
+  });
+});
+
+adminRoutes.get("/settings", requirePermission("system.view"), (c) => {
+  const store = c.get("store");
+  return success(c, {
+    deployment: {
+      publicBaseUrl: process.env.PUBLIC_BASE_URL || "http://localhost:3021",
+      adminApiBaseUrl: "/admin-api",
+      dataMode: process.env.AI_BOOK_BACK_STORE_FILE ? "json_file" : "memory",
+      adminStoreFile: process.env.AI_BOOK_BACK_STORE_FILE || "not_configured",
+    },
+    security: {
+      sessionCookie: process.env.SESSION_COOKIE || "liyan_session",
+      sessionDays: Math.max(1, Number(process.env.SESSION_DAYS ?? 7)),
+      apiKeysInFrontend: false,
+      auditEnabled: true,
+      redSentenceExportBlocked: true,
+    },
+    trialReadiness: {
+      organizations: store.organizations.size,
+      projects: store.projects.size,
+      users: store.users.size,
+      materials: store.materials.size,
+      llmConfigs: store.llmConfigs.size,
+    },
+  });
+});
+
 adminRoutes.get("/system", requirePermission("system.view"), (c) => {
   return success(c, {
     service: "aibooksback",
